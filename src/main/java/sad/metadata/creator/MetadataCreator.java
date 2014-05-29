@@ -1,0 +1,189 @@
+package sad.metadata.creator;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+
+import sad.utils.SADUtils;
+import sad.utils.UtilsObjPassing;
+import sad.vocab.Sad;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+
+public class MetadataCreator {
+
+	private StmtIterator itr = null;
+	Resource rsc = null;
+	BufferedWriter bw = null;
+
+	UtilsObjPassing objPass;
+
+	public MetadataCreator(UtilsObjPassing objPass) {
+
+		this.objPass = objPass;
+
+		createMetadata();
+
+	}
+
+	private void createMetadata() {
+
+		int tupleCount = 0;
+
+		Model lclmdl = ModelFactory.createDefaultModel();
+
+		Model mdl = objPass.getMdl();
+
+		String qryName = SADUtils.makeFullUri(objPass.getQryName());
+
+		String sparql_lang = SADUtils.queryLanguage(objPass
+				.getQueryToEvaluate());
+
+		if (!mdl.isEmpty()) {
+			// logger.info("query #{}. returned result= {}", queryNumber,
+			// "YES");
+			// numOfQryReturnResults++;
+			itr = mdl.listStatements(); // iterate over the current model
+			while (itr.hasNext()) {
+
+				Statement stmt = itr.nextStatement();
+				rsc = stmt.getSubject();// get the subject for which the query
+										// was run
+
+				if (rsc.toString().equals(objPass.getDatasetInQryConstruct())) {
+					tupleCount++; // count the number of tuple
+				}
+			}
+
+			lclmdl.createResource(Sad.QueryRun)
+					.addProperty(
+							Sad.query,
+							lclmdl.createResource(qryName)
+									.addProperty(Sad.language, sparql_lang)
+									.addProperty(Sad.RDFS,
+											objPass.getQueryToEvaluate()))
+					.addProperty(
+							Sad.countTriples,
+							lclmdl.createTypedLiteral(objPass.getSols(),
+									"http://www.w3.org/2001/XMLSchema#integer"))
+					.addProperty(
+							Sad.execStartTime,
+							lclmdl.createTypedLiteral(
+									objPass.getExecutionStartTime(),
+									"http://www.w3.org/2001/XMLSchema#dateTimeStamp"))
+					.addProperty(
+							Sad.resultDataset,
+							lclmdl.createResource(objPass
+									.getDatasetInQryConstruct()))
+					.addProperty(Sad.resultGraph,
+							lclmdl.createResource(objPass.getGraphName()))
+					.addProperty(
+							Sad.execEndTime,
+							lclmdl.createTypedLiteral(
+									objPass.getExecutionEndTime(),
+									"http://www.w3.org/2001/XMLSchema#dateTimeStamp"))
+					.addProperty(
+							Sad.responseCode,
+							lclmdl.createTypedLiteral(
+									objPass.getServerStatusCode(),
+									"http://www.w3.org/2001/XMLSchema#integer"))
+					.addProperty(
+							Sad.responseHeader,
+							lclmdl.createTypedLiteral(objPass.getHttpResponse()))
+					.addProperty(
+							Sad.RDFS,
+							lclmdl.createLiteral(
+									"Extracting triple count from '"
+											+ objPass.getEndpoint() + "' on "
+											+ objPass.getExecutionStartTime(),
+									"en"))
+					.addProperty(
+							Sad.resultTupleCount,
+							lclmdl.createTypedLiteral(tupleCount,
+									"http://www.w3.org/2001/XMLSchema#integer"))
+					.addProperty(Sad.endpoint,
+							lclmdl.createResource(objPass.getEndpoint()));
+
+		} else {
+			// logger.info("query #{}. returned result= {}",queryNumber,
+			// "{# Empty TURTLE}");
+			// numOfQryReturnNoResults++;
+			lclmdl.createResource(Sad.QueryRun)
+					.addProperty(
+							Sad.query,
+							lclmdl.createResource(qryName)
+									.addProperty(Sad.language, sparql_lang)
+									.addProperty(Sad.RDFS,
+											objPass.getQueryToEvaluate()))
+					.addProperty(
+							Sad.countTriples,
+							lclmdl.createTypedLiteral(objPass.getSols(),
+									"http://www.w3.org/2001/XMLSchema#integer"))
+					.addProperty(
+							Sad.execStartTime,
+							lclmdl.createTypedLiteral(
+									objPass.getExecutionStartTime(),
+									"http://www.w3.org/2001/XMLSchema#dateTimeStamp"))
+					.addProperty(Sad.resultGraph,
+							lclmdl.createResource(objPass.getGraphName()))
+					.addProperty(
+							Sad.execEndTime,
+							lclmdl.createTypedLiteral(
+									objPass.getExecutionEndTime(),
+									"http://www.w3.org/2001/XMLSchema#dateTimeStamp"))
+					.addProperty(
+							Sad.responseCode,
+							lclmdl.createTypedLiteral(
+									objPass.getServerStatusCode(),
+									"http://www.w3.org/2001/XMLSchema#integer"))
+					.addProperty(
+							Sad.responseHeader,
+							lclmdl.createTypedLiteral(objPass.getHttpResponse()))
+					.addProperty(
+							Sad.RDFS,
+							lclmdl.createLiteral(
+									"Tried to extract triple from '"
+											+ objPass.getEndpoint() + "' on "
+											+ objPass.getExecutionStartTime(),
+									"en"))
+					.addProperty(Sad.endpoint,
+							lclmdl.createResource(objPass.getEndpoint()))
+					.addProperty(
+							Sad.resultTupleCount,
+							lclmdl.createTypedLiteral(tupleCount,
+									"http://www.w3.org/2001/XMLSchema#integer"));// no result means tuple count 0
+		}
+
+		try {
+			bw = new BufferedWriter(objPass.getWriter());
+
+			bw.write("\n#---------------------Above Results are generated by following Query-------------------\n");
+			bw.write("#" + SADUtils.format(objPass.getQueryToEvaluate()));
+			bw.write("\n######################################################################################\n");
+			bw.write("\n");
+
+			// mdl.add(lclmdl);
+			lclmdl.write(objPass.getWriter(), "N-TRIPLES");
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				bw.flush();
+				bw.close();
+				// mdl.close();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+
+}

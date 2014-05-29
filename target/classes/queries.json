@@ -1,0 +1,184 @@
+{
+    "endpointAlive": "select * where {?s ?p ?o} limit 1",
+    "isSupportSparql1.1": "SELECT (COUNT(*) as ?sparql1_1) WHERE { SELECT * WHERE { ?s ?p ?o } LIMIT 1 }",
+    "queriesWithDescription": [
+        {
+            "qryLabel": "endPointMetaData ",
+            "qryNumber":"2",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <endpointUrl> ?predicateOut ?value . ?subject ?predicateIn <endpointUrl> .} WHERE { { <endpointUrl> ?predicateOut ?value } UNION { ?subject ?predicateIn <endpointUrl> }}"
+        },
+        {
+            "qryLabel": " voidDatasetMetaData",
+            "qryNumber":"3",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT{ ?dataset ?p ?o .} WHERE { ?dataset a void:Dataset . ?dataset void:sparqlEndpoint <endpointUrl> . ?dataset ?p ?o . } "
+        },
+        {
+            "qryLabel": "voidDatasetPartitionMetaData ",
+            "qryNumber":"4",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT{ ?pPart ?pp ?po . ?cPart ?cp ?co . ?cpPart ?cpp ?cpo . } WHERE { ?dataset a void:Dataset . ?dataset void:sparqlEndpoint <endpointUrl> . OPTIONAL { ?dataset void:propertyPartition ?pPart . ?pPart ?pp ?po .} OPTIONAL { ?dataset void:classPartition ?cPart . ?cPart ?cp ?co . OPTIONAL { ?cPart void:propertyPartition ?cpPart . ?cpPart ?cpp ?cpo .}}} "
+        },
+        {
+            "qryLabel": "sdService ",
+            "qryNumber":"5",
+            "qry": " PREFIX sd: <http://www.w3.org/ns/sparql-service-description#> CONSTRUCT { ?service sd:endpoint <endpointUrl> ; ?p ?o . } WHERE { ?service sd:endpoint <endpointUrl> ; ?p ?o . }"
+        },
+        {
+            "qryLabel": "sdServiceGraphCollectionAndNamedGraphs ",
+            "qryNumber":"6",
+            "qry": " PREFIX sd: <http://www.w3.org/ns/sparql-service-description#> CONSTRUCT {  ?service sd:endpoint <endpointUrl> ; ?p ?o . ?service sd:availableGraphs ?gc . ?gc ?gcp ?gco . ?gc sd:namedGraph ?ng . ?ng ?ngp ?ngo .} WHERE { ?service sd:endpoint <endpointUrl> ; ?p ?o . OPTIONAL {  ?service sd:availableGraphs ?gc .?gc ?gcp ?gco . OPTIONAL { ?gc sd:namedGraph ?ng . ?ng ?ngp ?ngo .}}}"
+        },
+        {
+            "qryLabel": "totalNumberOfTriples ",
+            "qryNumber":"7",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:triples ?count } WHERE { SELECT (COUNT(*) AS ?count)  WHERE { ?s ?p ?o } } "
+        },
+        
+        {
+   			 "qryLabel": " totalNumberOfEntities",
+   			 "qryNumber": "8",
+    		 "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:entities ?count } WHERE { SELECT(COUNT(DISTINCT ?entity) AS?count) WHERE { {?entity ?p ?o.}UNION{  ?s ?p2 ?entity } ?dataset a void:Dataset.?dataset void:sparqlEndpoint <endpointUrl>.?dataset void:uriRegexPattern ?entityRegex.?dataset void:uriSpace ?entityPrefix.FILTER(regex(str(?entity), str(?entityRegex))||strstarts(str(?entity), str(?entityPrefix))) } }"
+		},
+		
+        {
+            "qryLabel": "totalDistinctClasses ",
+            "qryNumber":"9",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classes ?count} WHERE { SELECT (COUNT(DISTINCT ?o) AS ?count) WHERE { ?s a ?o } } "
+        },
+        {
+            "qryLabel": "totalDistinctProp ",
+            "qryNumber":"10",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:properties ?count} WHERE { SELECT (COUNT(DISTINCT ?p) AS ?count)  WHERE { ?s ?p ?o } } "
+        },
+        {
+            "qryLabel": "totalDistinctSubjectNode ",
+            "qryNumber":"11",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:distinctSubjects ?count } WHERE { SELECT (COUNT(DISTINCT ?s ) AS ?count)  WHERE {  ?s ?p ?o   } } "
+        },
+        {
+            "qryLabel": "totalDistinctObjectNode ",
+            "qryNumber":"12",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:distinctObjects ?count } WHERE { SELECT (COUNT(DISTINCT ?o ) AS ?count)  WHERE {  ?s ?p ?o   } } "
+        },
+        {
+            "qryLabel": "listOfClassesInDataset/sparql1.1 ",
+            "qryNumber":"14",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition  ?cUri. ?cUri void:class ?c . } WHERE { ?s a ?c . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?c)))) as ?cUri) }"
+        },
+        
+        {
+            "qryLabel": "listOfPropertiesInDataset/sparql1.1 ",
+            "qryNumber":"16",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition ?pUri . ?pUri void:property ?p . } WHERE { ?s ?p ?o . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?p)))) AS ?pUri)}"
+        },
+        {
+            "qryLabel": "listOfPropertiesWithinClassInDataset/sparql1.1 ",
+            "qryNumber":"18",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition ?cpUri. ?cUri  void:class ?c ; void:propertyPartition ?cpUri . ?cpUri void:property ?p  . } WHERE { ?s a ?c ; ?p ?o . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?c)))) AS ?cUri) BIND(IRI(CONCAT(STR(<baseUri>),MD5(CONCAT(STR(?c),STR(?p))))) As ?cpUri)} "
+        },
+        {
+            "qryLabel": "numberOfTriplesPerClassPartition ",
+            "qryNumber":"19",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [ void:class ?c ; void:triples ?count ] } WHERE { SELECT (COUNT(?p) AS ?count) ?c WHERE { ?s a ?c ; ?p ?o . } GROUP BY ?c } "
+        },
+        {
+            "qryLabel": "numberOfTriplesPerPropertyPartition",
+            "qryNumber":"20",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ; void:triples ?count ] } WHERE { SELECT (COUNT(?o) AS ?count) ?p  WHERE { ?s ?p ?o . } GROUP BY ?p } "
+        },
+        {
+            "qryLabel": " numberOfTriplesPerPropertyPartitionInsideClassPartition",
+            "qryNumber":"21",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [ void:class ?c ; void:propertyPartition [ void:property ?p ; void:triples ?count ]] . } WHERE { SELECT (COUNT(?o) AS ?count) ?p  WHERE { ?s a ?c ; ?p ?o . } GROUP BY ?c ?p }"
+        },
+        {
+            "qryLabel": "numberOfClassesPerClassPartition ",
+            "qryNumber":"22",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [ void:class ?c ; void:classes ?count ] } WHERE { SELECT (COUNT(DISTINCT ?c2) AS ?count) ?c  WHERE { ?s a ?c ; a ?c2 . } GROUP BY ?c } "
+        },
+        {
+            "qryLabel": " numberOfPropertiesPerClassPartition",
+            "qryNumber":"23",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:classPartition [ void:class ?c ; void:properties ?count ] } WHERE { SELECT (COUNT(DISTINCT ?p) AS ?count) ?c  WHERE { ?s a ?c ; ?p ?o . } GROUP BY ?c }"
+        },
+        {
+            "qryLabel": "numberOfSubjectsPerClassPartition ",
+            "qryNumber":"24",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:classPartition [ void:class ?c ; void:distinctSubjects ?count ] } WHERE { SELECT (COUNT(DISTINCT ?s) AS ?count) ?c   WHERE { ?s a ?c . } GROUP BY ?c } "
+        },
+        {
+            "qryLabel": "numberOfSubjectsPerPropertyPartition ",
+            "qryNumber":"25",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition  [ void:property ?p ; void:distinctSubjects ?count ]  } WHERE { SELECT (COUNT(DISTINCT ?s) AS ?count) ?p WHERE { ?s ?p ?o . } GROUP BY ?p }"
+        },
+        {
+            "qryLabel": " numberOfSubjectsPerPropertyPartitionInsideClassPartition",
+            "qryNumber":"26",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:classPartition [ void:class ?c ; void:propertyPartition [ void:distinctSubjects ?count ] ] } WHERE { SELECT (COUNT(DISTINCT ?s) AS ?count) ?c ?p   WHERE { ?s a ?c ; ?p ?o . } GROUP BY ?c ?p } "
+        },
+        {
+            "qryLabel": "numberOfObjectsPerClassPartition ",
+            "qryNumber":"27",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:classPartition [ void:class ?c ; void:distinctObjects ?count ] } WHERE { SELECT (COUNT(DISTINCT ?o) AS ?count) ?c   WHERE { ?s a ?c ; ?p ?o } GROUP BY ?c } "
+        },
+        {
+            "qryLabel": "numberOfObjectsPerPropertyPartition ",
+            "qryNumber":"28",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ; void:distinctSubjects ?count ] } WHERE { SELECT (COUNT(DISTINCT ?o) AS ?count) ?p WHERE { ?s ?p ?o . } GROUP BY ?p } "
+        },
+        {
+            "qryLabel": "numberOfObjectsPerPropertyPartitionInsideClassPartition ",
+            "qryNumber":"29",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:classPartition  [ void:class ?c ; void:propertyPartition [ void:distinctObjects ?count ; void:property ?p ] ]} WHERE { SELECT (COUNT(DISTINCT ?o) AS ?count) ?c ?p WHERE { ?s a ?c ; ?p ?o . } GROUP BY ?c ?p }"
+        },
+        {
+            "qryLabel": " numberOfDistinctSubjectIRIs",
+            "qryNumber":"30",
+            "qry": "PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctIRIReferenceSubjects ?count } WHERE { SELECT (COUNT(DISTINCT ?s ) AS ?count) WHERE {  ?s ?p ?o  . FILTER(isIri(?s))} } "
+        },
+        {
+            "qryLabel": "numberOfDistinctSubjectBlankNodes ",
+            "qryNumber":"31",
+            "qry": "PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctBlankNodeSubjects ?count } WHERE { SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {  ?s ?p ?o  . FILTER(isBlank(?s))} } "
+        },
+        {
+            "qryLabel": "numberOfDistinctObjectIRIs ",
+            "qryNumber":"32",
+            "qry": "PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctIRIReferenceObjects ?count } WHERE { SELECT (COUNT(DISTINCT ?o ) AS ?count) WHERE {  ?s ?p ?o  . FILTER(isIri(?o))} } "
+        },
+        {
+            "qryLabel": "numberOfDistinctObjectLiteralNodes ",
+            "qryNumber":"33",
+            "qry": " PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctLiterals ?count } WHERE { SELECT (COUNT(DISTINCT ?o ) AS ?count)  WHERE {  ?s ?p ?o  . FILTER(isLiteral(?o))} }"
+        },
+        {
+            "qryLabel": "numberOfDistinctObjectBlankNodes ",
+            "qryNumber":"34",
+            "qry": " PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctBlankNodeObjects ?count } WHERE { SELECT (COUNT(DISTINCT ?o ) AS ?count)  WHERE {  ?s ?p ?o  . FILTER(isBlank(?o))} }"
+        },
+        {
+            "qryLabel": " numberOfDistinctBlankNodes",
+            "qryNumber":"35",
+            "qry": "PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctBlankNodes ?count } WHERE { SELECT (COUNT(DISTINCT ?b ) AS ?count)  WHERE {  { ?s ?p ?b } UNION { ?b ?p ?o } FILTER(isBlank(?b))} } "
+        },
+        {
+            "qryLabel": "numberOfDistinctIRIs ",
+            "qryNumber":"36",
+            "qry": "PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctIRIReferences ?count } WHERE { SELECT (COUNT(DISTINCT ?u ) AS ?count)  WHERE {  { ?u ?p ?o } UNION { ?s ?u ?o } UNION { ?s ?p ?u } FILTER(isIri(?u))} } "
+        },
+        {
+            "qryLabel": " distinctRDFNodes",
+            "qryNumber":"37",
+            "qry": " PREFIX vext: <http://ldf.fi/void-ext#> CONSTRUCT { <datasetUri> vext:distinctRDFNodes ?count } WHERE { SELECT (COUNT(DISTINCT ?n ) AS ?count)  WHERE {  { ?n ?p ?o } UNION { ?s ?n ?o } UNION { ?s ?p ?n } } }"
+        },
+        {
+            "qryLabel": "schemaMapSubjectType ",
+            "qryNumber":"38",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> PREFIX sad: <http://vocab.deri.ie/sad#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ; sad:subjectTypes [ sad:subjectClass ?sType ; sad:distinctMembers ?count ]]  .} WHERE { SELECT (COUNT(?s) AS ?count) ?p ?sType WHERE { ?s ?p ?o ; a ?sType . } GROUP BY ?p ?sType}"
+        },
+        {
+            "qryLabel": " schemaMapObjectType",
+            "qryNumber":"39",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> PREFIX sad: <http://vocab.deri.ie/sad#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ; sad:objectTypes [ sad:objectClass ?oType ; sad:distinctMembers ?count ]] .} WHERE { SELECT (COUNT(?o) AS ?count) ?p ?oType WHERE { ?s ?p ?o . ?o a ?oType . } GROUP BY ?p ?oType }"
+        }
+    ]
+}
