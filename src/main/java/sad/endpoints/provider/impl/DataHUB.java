@@ -49,17 +49,17 @@ public class DataHUB implements EndPointsProvider {
 
     public Set<String> provider() {
 
-
-		// endpSet.add("http://semantic.eea.europa.eu/sparql");
-		// endpSet.add("http://roma.rkbexplorer.com/sparql/"); // generates warnings long loop for PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [ void:class ?c ; void:propertyPartition [ void:property ?p ] ] } WHERE { ?s a ?c ; ?p ?o .}'
-		// endpSet.add("http://s4.semanticscience.org:14006/sparql");
-		// endpSet.add("http://s4.semanticscience.org:14002/sparql");
-		// endpSet.add("http://epsrc.rkbexplorer.com/sparql");
-		// endpSet.add("http://s4.semanticscience.org:14008/sparql");
-		// endpSet.add("http://lod.b3kat.de/sparql");
-		// endpSet.add("http://acm.rkbexplorer.com/sparql/");
-		// endpSet.add("http://data.uni-muenster.de/sparql");
-		// endpSet.add("http://biomodels.bio2rdf.org/sparql");
+/*
+		endpSet.add("http://semantic.eea.europa.eu/sparql");
+		endpSet.add("http://roma.rkbexplorer.com/sparql/"); // generates warnings long loop for PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [ void:class ?c ; void:propertyPartition [ void:property ?p ] ] } WHERE { ?s a ?c ; ?p ?o .}'
+		endpSet.add("http://s4.semanticscience.org:14006/sparql");
+		endpSet.add("http://s4.semanticscience.org:14002/sparql");
+		endpSet.add("http://epsrc.rkbexplorer.com/sparql");
+		endpSet.add("http://s4.semanticscience.org:14008/sparql");
+		endpSet.add("http://lod.b3kat.de/sparql");
+		endpSet.add("http://acm.rkbexplorer.com/sparql/");
+		endpSet.add("http://data.uni-muenster.de/sparql");
+		endpSet.add("http://biomodels.bio2rdf.org/sparql");*/
     	
     	
     	fileEndpointSet=SADUtils.readEndpointsFromFile(sourceFile);

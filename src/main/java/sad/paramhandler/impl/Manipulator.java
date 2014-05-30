@@ -317,30 +317,30 @@ public class Manipulator implements ParamHandler {
 	public void latency() throws ParseException{
 		
 		latency = SADUtils.getExecStartTime();
-        logger.info("query #{}. first retrievel latency time {} ",qryNumber,latency);
+        logger.info("query #{}. latency start time {} ",qryNumber,latency);
 	}
 	
-    public void startTime() throws ParseException {
+    public void startTime(String param) throws ParseException {
     	
         executionStartTime = SADUtils.getExecStartTime();
-        logger.info("query #{}. execution start time {} ",qryNumber,executionStartTime);
+        logger.info("query #{}. {} start time {} ",qryNumber,param,executionStartTime);
     }
 
     
-    public void endTime() throws ParseException {
+    public void endTime(String param) throws ParseException {
     	
         executionEndTime = SADUtils.getExecEndTime();
-        logger.info("query #{}. execution end time {} ",qryNumber,executionEndTime);
+        logger.info("query #{}. {} end time {} ",qryNumber,param,executionEndTime);
     }
 
-    public void totalTime() throws ParseException {
+    public void totalTime(String param) throws ParseException {
         
         totalTime = SADUtils.getTotalTime(executionStartTime, executionEndTime);
 
       if (totalTime < 0) {
             logger.info("total query execution time is less than or equal to 0 millisecond");
         } else {
-            logger.info("query #{}. execution total time in milliseconds {} ",qryNumber , totalTime);
+            logger.info("query #{}. {} total time in milliseconds {} ",qryNumber,param , totalTime);
         }
 
     }
@@ -390,6 +390,8 @@ public class Manipulator implements ParamHandler {
     		totalTimeList.clear();
     		qryMaxMinTriplesMap.clear();
     		totalTripleList.clear();
+    		totalLatencyList.clear();
+    		qryMaxMinLatencyMap.clear();
     		
     		totalNumberOfTriples=0;
     		totalExecutionTime=0;
@@ -437,7 +439,7 @@ public class Manipulator implements ParamHandler {
             		.replace("endpointUrl", endpoint)
             		.replace("baseUri",baseUri);
             			
-    				startTime();// start time
+    				startTime("execution");// start time
     				//HttpQuery ex= new HttpQuery(endpoint);
     				
     				
@@ -452,16 +454,17 @@ public class Manipulator implements ParamHandler {
           
               if(query.isConstructType()){
               
-            	
+            	latency();// start time
             	Iterator<Triple> triples =qe.execConstructTriples();
             	
             	while(triples.hasNext()){
             		triples.next();
             		 sols++;
             		 if(sols==1){
-            			 latency();// start time
+            			 endTime("latency");
+            			 totalTime("latency"); 
             			 totalLatencyList.add((double)totalTime);
-                         qryMaxMinLatencyMap.put(qryNumber, totalTimeList);
+                         qryMaxMinLatencyMap.put(qryNumber, totalLatencyList);
             		 }
             		 
             		 qryAnswer=1;
@@ -481,8 +484,8 @@ public class Manipulator implements ParamHandler {
                              if (readTime.equals("Read timed out")) {
                              	logger.error("query #{}. issued {} ",qryNumber,httpe.getCause().getMessage());
                                //  timeOut = true;
-                                 endTime();// end timefor 
-                                 totalTime();// calculated time
+                                 endTime("execution");// end timefor 
+                                 totalTime("execution");// calculated time
                                  
                                  totalTimeList.add((double)totalTime);
                                  qryMaxMinTimeMap.put(qryNumber, totalTimeList);
@@ -490,16 +493,16 @@ public class Manipulator implements ParamHandler {
                              }
                              else{
                                 	 logger.error("query #{}. {}",qryNumber,httpe.getCause().getMessage());
-                                	  endTime();// end time
-                                      totalTime();// calculated time
+                                	  endTime("execution");// end time
+                                      totalTime("execution");// calculated time
                                       totalTimeList.add((double)totalTime);
                                       qryMaxMinTimeMap.put(qryNumber, totalTimeList); 
                                  }
                             
                      }  
         			 else{
-                         endTime();// end time
-                         totalTime();// calculated time
+                         endTime("execution");// end time
+                         totalTime("execution");// calculated time
                          totalTimeList.add((double)totalTime);
                          qryMaxMinTimeMap.put(qryNumber, totalTimeList); 
                      }
@@ -513,22 +516,22 @@ public class Manipulator implements ParamHandler {
                          if (readTime.equals("Read timed out")) {
                          	logger.error("query #{}. issued ({}) ",qryNumber,httpe.getCause().getMessage());
                            //  timeOut = true;
-                             endTime();// end time
-                             totalTime();// calculated time
+                             endTime("execution");// end time
+                             totalTime("execution");// calculated time
                              totalTimeList.add((double)totalTime);
                              qryMaxMinTimeMap.put(qryNumber, totalTimeList);
                              }
                          else{
                             	 logger.error("query #{}. {}",qryNumber,httpe.getCause().getMessage());
-                            	  endTime();// end time
-                                  totalTime();// calculated time
+                            	  endTime("execution");// end time
+                                  totalTime("execution");// calculated time
                                   totalTimeList.add((double)totalTime);
                                   qryMaxMinTimeMap.put(qryNumber, totalTimeList); 
                              }
                  } 
             	 else{
-            		 endTime();// end time
-                     totalTime();// calculated time
+            		 endTime("execution");// end time
+                     totalTime("execution");// calculated time
                      totalTimeList.add((double)totalTime);
                      qryMaxMinTimeMap.put(qryNumber, totalTimeList);
             	 	}
@@ -536,8 +539,8 @@ public class Manipulator implements ParamHandler {
         	
           }catch(RiotException rioexp){
         	  
-        	  endTime();// end time
-              totalTime();// calculated time
+        	  endTime("execution");// end time
+              totalTime("execution");// calculated time
               totalTimeList.add((double)totalTime);
               qryMaxMinTimeMap.put(qryNumber, totalTimeList);
               
@@ -546,29 +549,29 @@ public class Manipulator implements ParamHandler {
           }catch(ClassCastException clcastex){
         	 
         	  logger.error("class cast exception {}", clcastex.getCause());
-        	     endTime();// end time
-                 totalTime();// calculated time
+        	     endTime("execution");// end time
+                 totalTime("execution");// calculated time
                  totalTimeList.add((double)totalTime);
                  qryMaxMinTimeMap.put(qryNumber, totalTimeList);
                  
           }catch(NullPointerException nullexp){
     		logger.error("no triple found and the exception is {}",nullexp.getMessage());
-    		 endTime();// end time
-             totalTime();// calculated time
+    		 endTime("execution");// end time
+             totalTime("execution");// calculated time
              totalTimeList.add((double)totalTime);
              qryMaxMinTimeMap.put(qryNumber, totalTimeList);
     		
     	}catch (ParseException e) {
 			
         	   logger.error("{}",e.getMessage());
-        	   endTime();// end time
-               totalTime();// calculated time
+        	   endTime("execution");// end time
+               totalTime("execution");// calculated time
                totalTimeList.add((double)totalTime);
                qryMaxMinTimeMap.put(qryNumber, totalTimeList);
       		
 		}catch (Exception e) {
-        	  endTime();// end time
-              totalTime();// calculated time
+        	  endTime("execution");// end time
+              totalTime("execution");// calculated time
               totalTimeList.add((double)totalTime);
               qryMaxMinTimeMap.put(qryNumber, totalTimeList);
               logger.error("query #{}. failed because of {} for '{}' ", qryNumber, e.getMessage(), endpoint);
@@ -645,8 +648,8 @@ public class Manipulator implements ParamHandler {
     	
         try {
             mdl = qe.execConstruct();
-            endTime();// end time
-            totalTime();// calculated time
+            endTime("execution");// end time
+            totalTime("execution");// calculated time
             totalTimeList.add((double)totalTime);
             qryMaxMinTimeMap.put(qryNumber, totalTimeList);
         }
