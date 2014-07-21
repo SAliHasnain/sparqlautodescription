@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -20,13 +19,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.logging.Level;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -42,6 +39,11 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.query.ResultSet;
 
+/**
+ * 
+ * @author qaiser.mehmood@insight-centre.org
+ */
+
 public class SADUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger("SADUtils");
@@ -54,7 +56,17 @@ public class SADUtils {
 	static FileWriter writer = null;
 	// read from file
 	static BufferedReader br = null;
+	
+	
+	static QueryExecution qryexec = null;
+	static ResultSet res = null;
+	static Query query = null;
 
+	
+
+	/*
+	 * get current time of the system in GMT 
+	 */
 	public static String getCurrentTime() throws ParseException {
 
 		Date date = new Date(System.currentTimeMillis());
@@ -64,6 +76,7 @@ public class SADUtils {
 		return dateFormat.format(date);
 	}
 
+	
 	public static String getExecStartTime() throws ParseException {
 
 		return getCurrentTime();
@@ -74,6 +87,9 @@ public class SADUtils {
 		return getCurrentTime();
 	}
 
+	/*
+	 * calculate the total time interval for queries
+	 */
 	public static long getTotalTime(String startTime, String endTime)
 			throws ParseException {
 
@@ -85,7 +101,7 @@ public class SADUtils {
 		return (date2.getTime() - date1.getTime());
 	}
 
-	/**
+	/*
 	 * create the directory and files to holds the data
 	 * 
 	 * @param dirctory
@@ -127,7 +143,7 @@ public class SADUtils {
 		return writer;
 	}
 
-	/**
+	/*
 	 * log the number of endpoints either (all or alive) in user's home in
 	 * EndPoints directory
 	 * 
@@ -186,6 +202,9 @@ public class SADUtils {
 
 	}
 
+	/*
+	 * log the retrieved endpoints into a file
+	 */
 	public static void logEndpoints(Set<String> endpoints,
 			LoadConfigurations config) {
 
@@ -223,10 +242,15 @@ public class SADUtils {
 		}
 	}
 
-	static QueryExecution qryexec = null;
-	static ResultSet res = null;
-	static Query query = null;
-
+/*
+ * check the given endpoint is alive or not. Returns true if alive else false 
+ * @param endpoint
+ * @param config
+ * @return boolean
+ * @throws IOException
+ * @throws IOException
+ * @throws ConfigurationException
+ */
 	public static boolean isAlive(String endpoint, LoadConfigurations config)
 			throws IOException, IOException, ConfigurationException {
 
@@ -256,7 +280,7 @@ public class SADUtils {
 		}
 	}
 
-	/**
+	/*
 	 * 
 	 * @param endPoint
 	 *            to check the header fields
@@ -274,6 +298,11 @@ public class SADUtils {
 		return http;
 	}
 
+	/**
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public static Set<String> readEndpointsFromFile(String file) {
 		Set<String> fileEndpointSet = new HashSet<String>();
 
@@ -459,7 +488,7 @@ public class SADUtils {
 
 		String lang = "";
 
-		if (query.contains("COUNT")) {
+		if (query.contains("COUNT") || query.contains("BIND")) {
 			lang = "SPARQL1.1";
 		} else {
 			lang = "SPARQL1.1/1.0";
@@ -469,7 +498,7 @@ public class SADUtils {
 		return lang;
 	}
 
-	/**
+	/*
 	 * method to create a header fields in CSV file
 	 */
 	public void createHeaderInCSVFile(String fileName) {
@@ -490,7 +519,7 @@ public class SADUtils {
 		}
 	}
 
-	/**
+	/*
 	 * write to CSV file the data such as endpoint, status, measurement time and
 	 * etc.
 	 * 

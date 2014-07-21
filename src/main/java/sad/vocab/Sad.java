@@ -5,6 +5,11 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+/**
+ * 
+ * @author qaiser.mehmood@insight-centre.org
+ */
+
 public class Sad {
     /** <p>The RDF model that holds the vocabulary terms</p> */
     private static Model m_model = ModelFactory.createDefaultModel();

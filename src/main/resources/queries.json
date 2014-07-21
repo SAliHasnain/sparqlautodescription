@@ -2,6 +2,9 @@
     "endpointAlive": "select * where {?s ?p ?o} limit 1",
     "isSupportSparql1.1": "SELECT (COUNT(*) as ?sparql1_1) WHERE { SELECT * WHERE { ?s ?p ?o } LIMIT 1 }",
     "queriesWithDescription": [
+  
+        
+ 
         {
             "qryLabel": "endPointMetaData ",
             "qryNumber":"2",
@@ -59,10 +62,21 @@
             "qryNumber":"12",
             "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:distinctObjects ?count } WHERE { SELECT (COUNT(DISTINCT ?o ) AS ?count)  WHERE {  ?s ?p ?o   } } "
         },
+           {
+            "qryLabel": "listOfClassesInDataset/sparql1.0 ",
+            "qryNumber":"13",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri>  void:classPartition [ void:class ?c ] } WHERE { ?s a ?c } limit 20000"
+        },
+       
         {
             "qryLabel": "listOfClassesInDataset/sparql1.1 ",
             "qryNumber":"14",
             "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition  ?cUri. ?cUri void:class ?c . } WHERE { ?s a ?c . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?c)))) as ?cUri) }"
+        },
+               {
+            "qryLabel": "listOfPropertiesInDataset/sparql1.0 ",
+            "qryNumber":"15",
+            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ] } WHERE { ?s ?p ?o } limit 20000"
         },
         
         {
@@ -70,6 +84,12 @@
             "qryNumber":"16",
             "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition ?pUri . ?pUri void:property ?p . } WHERE { ?s ?p ?o . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?p)))) AS ?pUri)}"
         },
+         {
+            "qryLabel": "listOfPropertiesWithinClassInDataset/sparql1.0 ",
+            "qryNumber":"17",
+            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [  void:class ?c ; void:propertyPartition [ void:property ?p  ] ] } WHERE { ?s a ?c ; ?p ?o .} limit 20000"
+        },
+    
         {
             "qryLabel": "listOfPropertiesWithinClassInDataset/sparql1.1 ",
             "qryNumber":"18",

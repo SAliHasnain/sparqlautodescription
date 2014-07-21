@@ -4,6 +4,11 @@ import java.io.FileWriter;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
+/**
+ * 
+ * @author qaiser.mehmood@insight-centre.org
+ */
+
 public class UtilsObjPassing {
 
 	private FileWriter writer = null;
@@ -11,13 +16,13 @@ public class UtilsObjPassing {
 	private Model mdl;
 
 	// server parameters
-	private String endpoint="";
-	private String server="";
-	private String serverStatusCode="", httpResponse="";
+	private String endpoint = "";
+	private String server = "";
+	private String serverStatusCode = "", httpResponse = "";
 
 	// query related variables
-	private long totalTime=0;
-	private String executionStartTime="", executionEndTime="";
+	private long totalTime = 0;
+	private String executionStartTime = "", executionEndTime = "";
 	private String qryName = "";
 	private String qryNumber = "";
 	private String actualQry = "";

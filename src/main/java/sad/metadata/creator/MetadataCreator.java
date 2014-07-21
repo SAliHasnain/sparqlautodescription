@@ -13,6 +13,11 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+/**
+ * 
+ * @author qaiser.mehmood@insight-centre.org
+ */
+
 public class MetadataCreator {
 
 	private StmtIterator itr = null;
@@ -43,9 +48,6 @@ public class MetadataCreator {
 				.getQueryToEvaluate());
 
 		if (!mdl.isEmpty()) {
-			// logger.info("query #{}. returned result= {}", queryNumber,
-			// "YES");
-			// numOfQryReturnResults++;
 			itr = mdl.listStatements(); // iterate over the current model
 			while (itr.hasNext()) {
 
@@ -58,6 +60,7 @@ public class MetadataCreator {
 				}
 			}
 
+			lclmdl.add(mdl);
 			lclmdl.createResource(Sad.QueryRun)
 					.addProperty(
 							Sad.query,
@@ -108,9 +111,7 @@ public class MetadataCreator {
 							lclmdl.createResource(objPass.getEndpoint()));
 
 		} else {
-			// logger.info("query #{}. returned result= {}",queryNumber,
-			// "{# Empty TURTLE}");
-			// numOfQryReturnNoResults++;
+
 			lclmdl.createResource(Sad.QueryRun)
 					.addProperty(
 							Sad.query,
@@ -154,7 +155,7 @@ public class MetadataCreator {
 					.addProperty(
 							Sad.resultTupleCount,
 							lclmdl.createTypedLiteral(tupleCount,
-									"http://www.w3.org/2001/XMLSchema#integer"));// no result means tuple count 0
+									"http://www.w3.org/2001/XMLSchema#integer"));
 		}
 
 		try {
@@ -164,21 +165,15 @@ public class MetadataCreator {
 			bw.write("#" + SADUtils.format(objPass.getQueryToEvaluate()));
 			bw.write("\n######################################################################################\n");
 			bw.write("\n");
-
-			// mdl.add(lclmdl);
 			lclmdl.write(objPass.getWriter(), "N-TRIPLES");
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
 				bw.flush();
 				bw.close();
-				// mdl.close();
-
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
