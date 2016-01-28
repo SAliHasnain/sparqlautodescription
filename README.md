@@ -5,7 +5,7 @@
 
 Public SPARQL Endpoints
 
-List of distinct public SPARQL Endpoints listed at datahub and (BIO2RDF release 1,2,3 including mirrors) can be seen here .
+List of distinct public SPARQL Endpoints listed at datahub and (BIO2RDF release 1,2,3 including mirrors) can be seen here\href{https://docs.google.com/document/d/1cCpSwStoPJUd5EQeKst3JCPgvmL6vko906Sl37AqJKc/edit} .
 
 List of distinct live public SPARQL Endpoints that contributed our experiments can be seen here.
 
