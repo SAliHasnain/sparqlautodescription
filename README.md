@@ -6,17 +6,17 @@
 Public SPARQL Endpoints
 
 List of distinct public SPARQL Endpoints listed at datahub and (BIO2RDF release 1,2,3 including mirrors) can be seen 
-[[heret|https://docs.google.com/document/d/1cCpSwStoPJUd5EQeKst3JCPgvmL6vko906Sl37AqJKc/edit]].
+at: https://docs.google.com/document/d/1cCpSwStoPJUd5EQeKst3JCPgvmL6vko906Sl37AqJKc/edit.
 
-List of distinct live public SPARQL Endpoints that contributed our experiments can be seen here.
+List of distinct live public SPARQL Endpoints that contributed our experiments can be seen at: https://docs.google.com/document/d/1tOmuIuF84RmzV90esi80OQ4XSVqKff_1xTeKxPL4SwE/edit .
 
 Raw Datasets
 
-Four Datasets namely (Drugbank, Kegg, Jamendo and Dbpedia (subset)) used during the local experiments can be downloaded here.
+Four Datasets namely (Drugbank, Kegg, Jamendo and Dbpedia (subset)) used during the local experiments can be downloaded at: https://drive.google.com/a/insight-centre.org/file/d/0ByWkCXI5Qdo_elZ3ZjRpdGI0SzA/view.
 
 SPARQL Engines with Datasets
 
-Four Engines used during Local Experiments namely (4-store, virtuoso, sesame, fuseki) with uploaded data(Drugbank, Kegg, Jamendo and Dbpedia (subset)) can be downloaded here.
+Four Engines used during Local Experiments namely (4-store, virtuoso, sesame, fuseki) with uploaded data(Drugbank, Kegg, Jamendo and Dbpedia (subset)) can be downloaded at: https://drive.google.com/a/insight-centre.org/folderview?id=0ByWkCXI5Qdo_NFBhUEVGb09pcHM&usp=sharing#.
 
 Benchmark Queries
 
@@ -26,11 +26,18 @@ SELECT * WHERE { ?s ?p ?o } LIMIT 1
 
 Query 2. endPointMetaData (sparql1.0)
 
-PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <endpointUrl> ?predicateOut ?value . ?subject ?predicateIn <endpointUrl> . } WHERE { { <endpointUrl> ?predicateOut ?value } UNION { ?subject ?predicateIn <endpointUrl> } }
+PREFIX void: <http://rdfs.org/ns/void#> 
+CONSTRUCT { <endpointUrl> ?predicateOut ?value . ?subject ?predicateIn <endpointUrl> . } 
+WHERE { { <endpointUrl> ?predicateOut ?value } 
+UNION { ?subject ?predicateIn <endpointUrl> } }
 
 Query 3. voidDatasetMetaData (sparql1.0)
 
-PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT{ ?dataset ?p ?o .} WHERE { ?dataset a void:Dataset . ?dataset void:sparqlEndpoint <endpointUrl> . ?dataset ?p ?o . }
+PREFIX void: <http://rdfs.org/ns/void#> 
+CONSTRUCT{ ?dataset ?p ?o .} 
+WHERE { ?dataset a void:Dataset . 
+        ?dataset void:sparqlEndpoint <endpointUrl> . 
+        ?dataset ?p ?o . }
 
 Query 4. voidDatasetPartitionMetaData (sparql1.0)
 
