@@ -11,6 +11,8 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.engine.http.QueryExceptionHTTP;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,6 +22,7 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,18 +30,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.jena.riot.RiotException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sad.data.modeling.and.creator.MetadataPlusResultsCreator;
 import sad.endpoints.provider.EndPointsProvider;
 import sad.handler.ParamHandler;
 import sad.initializer.LoadConfigurations;
-import sad.metadata.creator.MetadataCreator;
 import sad.utils.SADUtils;
 import sad.utils.UtilsObjPassing;
 
@@ -71,7 +74,6 @@ public class Manipulator implements ParamHandler {
 	private int serverTot = 0;
 
 	// Httpheader values variables
-
 	private String server;
 	private String statusResponse, serverStatusCode, httpResponse;
 	private List<String> hhtRespLst = new ArrayList<String>();
@@ -85,8 +87,7 @@ public class Manipulator implements ParamHandler {
 	LoadConfigurations config;
 	EndPointsProvider endpProvider;
 
-	// file writer
-	FileWriter writer = null;
+
 
 	// query related variables
 	private String qryName = "";
@@ -138,53 +139,7 @@ public class Manipulator implements ParamHandler {
 		this.endpProvider = endpProvider;
 	}
 
-	/**
-	 * log all the all endpoints retrieved from different sources
-	 */
-	public void logAllEndpoints() {
-
-		try {
-			SADUtils.logEndpoints(endpProvider.provider(), ALL_ENDPOINTS);
-		} catch (ParseException e) {
-			logger.error("{}", e.getMessage());
-		} catch (NullPointerException nullexp) {
-			logger.error("{}", nullexp.getMessage());
-
-		}
-	}
-
-	/**
-	 * log all the alive all endpoints retrieved from different sources
-	 */
-	public void logAliveEndpoints() {
-		try {
-			SADUtils.logEndpoints(endpProvider.provider(), LIVE_ENDPOINTS);
-		} catch (ParseException e) {
-			logger.error("{}", e.getMessage());
-		} catch (NullPointerException nullexp) {
-			logger.error("{}", nullexp.getMessage());
-
-		}
-
-	}
-
-	/**
-	 * log all the all alive and responding to (select query) endpoints
-	 * retrieved from different sources
-	 */
-	public void logAliveAndRespondingEndpoints() {
-
-		try {
-			SADUtils.logEndpoints(endpProvider.provider(), config);
-		} catch (ParseException e) {
-			logger.error("{}", e.getMessage());
-		} catch (NullPointerException nullexp) {
-			logger.error("{}", nullexp.getMessage());
-
-		}
-
-	}
-
+	
 	/**
 	 * query over the live endpoints retrieved from different sources (static or
 	 * stream)
@@ -194,7 +149,9 @@ public class Manipulator implements ParamHandler {
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
 		List<String> qryNum = new ArrayList<String>();
 		try {
-			List<String> alive = pickAliveEndpoints(endpProvider.provider());
+			List<String> alive = new ArrayList<String>();//pickAliveEndpoints(endpProvider.provider());
+			alive.addAll(endpProvider.provider());
+			Collections.sort(alive);
 			logger.info("total {} alive endpoints found", alive.size());
 			SADUtils.logEndpoints(new HashSet<String>(alive), "temp");
 			JSONArray genreArray = (JSONArray) config.loadConfiguration().get(
@@ -224,55 +181,17 @@ public class Manipulator implements ParamHandler {
 			logger.error("configuration exception");
 		} catch (ParseException e) {
 			e.printStackTrace();
-		} finally {
+		} catch(NullPointerException nullP){
+			logger.error("null ppinter exceptoion");
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally {
 
 			printLastLoggings();
 			printEndpointsDesc();
 		}
 
 	}
-
-	/*
-	 * print logging after each query completion over all endpoints
-	 */
-	public void printLastLoggings() {
-
-		logger.info("...total number of endpoints with 200 status code are {}",
-				total200status);
-		logger.info("...total number of endpoints with 400 status code are {}",
-				total400status);
-		logger.info("...total number of endpoints with 404 status code are {}",
-				total404status);
-		logger.info("...total number of endpoints with 500 status code are {}",
-				total500status);
-		logger.info("...total number of endpoints with 502 status code are {}",
-				total502status);
-		logger.info("...total number of endpoints with 503 status code are {}",
-				total503status);
-		logger.info(
-				"...total number of endpoints with Unknow host status are {}",
-				totalUnknownHostStatus);
-		logger.info("...total number of endpoints with Timeout status are {}",
-				totalTimeoutStatus);
-		logger.info(
-				"...total number of endpoints with Connection refused status are {}",
-				totalConnRefuseStatus);
-		logger.info(
-				"...total number of endpoints with not repsonding for some reasons {}",
-				someOtherReasons);
-		logger.info(
-				"...total number of endpoints with no response to select query {}",
-				notRespondingToSelect);
-		logger.info(
-				"...total number of endpoints with response to select query {}",
-				RespondingToSelect);
-		logger.info("...total number of endpoints support sparql1.1 {}",
-				totalSparql1_1);
-		logger.info("...total number of endpoints support sparql1.0 {}",
-				totalSparql1_0);
-
-	}
-
 	/**
 	 * query over endpoints logged in file
 	 */
@@ -281,8 +200,10 @@ public class Manipulator implements ParamHandler {
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
 		List<String> qryNum = new ArrayList<String>();
 		Set<String> fileEndpoints = SADUtils.readEndpointsFromFile(file);
-		List<String> alive = pickAliveEndpoints(fileEndpoints);
+		List<String> alive = new ArrayList<String>();
 
+		alive.addAll((fileEndpoints));
+		Collections.sort(alive);
 		try {
 			JSONArray genreArray = (JSONArray) config.loadConfiguration().get(
 					"queriesWithDescription");
@@ -331,32 +252,47 @@ public class Manipulator implements ParamHandler {
 
 	private void createGraphName(String grName) {
 
-		graphName = SADUtils.makeFullUri(grName.trim());
+		graphName = grName; //** temp commented out //SADUtils.makeFullUri(grName.trim());
 
 	}
 
-	public void latency() throws ParseException {
+	public void latency() {
 
+		try{
 		latency = SADUtils.getExecStartTime();
 		logger.info("query #{}. latency start time {} ", qryNumber, latency);
+		}catch(ParseException pe){
+			logger.info("{}",pe);
+		}
 	}
 
-	public void startTime(String param) throws ParseException {
+	public void startTime(String param) {
 
+		try{
 		executionStartTime = SADUtils.getExecStartTime();
 		logger.info("query #{}. {} start time {} ", qryNumber, param,
 				executionStartTime);
+		
+		}catch(ParseException pe){
+		logger.info("{}",pe);
+		}
 	}
 
-	public void endTime(String param) throws ParseException {
+	public void endTime(String param) {
 
+		try{
 		executionEndTime = SADUtils.getExecEndTime();
 		logger.info("query #{}. {} end time {} ", qryNumber, param,
 				executionEndTime);
+
+		}catch(ParseException pe){
+		logger.info("{}",pe);
+		}
 	}
 
 	public void totalTime(String param) throws ParseException {
 
+		try{
 		totalTime = SADUtils.getTotalTime(executionStartTime, executionEndTime);
 
 		if (totalTime < 0) {
@@ -368,6 +304,9 @@ public class Manipulator implements ParamHandler {
 					qryNumber, param, totalTime);
 		}
 
+		}catch(ParseException pe){
+		logger.info("{}",pe);
+		}
 	}
 
 	/*
@@ -415,44 +354,28 @@ public class Manipulator implements ParamHandler {
 		}
 
 		// initialize all the variables to avoid any cached data
-		endPointNumber = 0;// sequence number of endpoint
-		totalEndpoints = 0;
-		totalSparql1_1 = 0;
-		totalSparql1_0 = 0;
-
-		qryMaxMinTimeMap.clear();
-		totalTimeList.clear();
-		qryMaxMinTriplesMap.clear();
-		totalTripleList.clear();
-		totalLatencyList.clear();
-		qryMaxMinLatencyMap.clear();
-
-		totalNumberOfTriples = 0;
+		endPointNumber = 0;totalEndpoints = 0;totalSparql1_1 = 0;totalSparql1_0 = 0;totalNumberOfTriples = 0;
 		totalExecutionTime = 0;
-
+		qryMaxMinTimeMap.clear();totalTimeList.clear();qryMaxMinTriplesMap.clear();
+		totalTripleList.clear();totalLatencyList.clear();qryMaxMinLatencyMap.clear();
+		
+		endpoints.remove("");// remove the element if equal to empty string in endpoints list
+		
 		for (String endp : endpoints) {
+			endpoint = pickAliveEndpoints(endp);
+			if(endpoint!=""){
 			try {
-
-				endpoint = endp;
-				qryAnswer = 0;
-				sols = 0;
+				qryAnswer = 0;sols = 0;totalTime = 0;
 				executionStartTime = null;
 				executionEndTime = null;
-				totalTime = 0;
-				endPointNumber++;// sequence number of endpoint
+				
+				endPointNumber++;
 				totalEndpoints++;
 
 				setEndpointAndDataset("dataset", endpoint);
-
-				writer = SADUtils.creteDirAndFile(
-						"Queries",
-						URLEncoder.encode(qryName, "UTF-8") + "-"
-								+ URLEncoder.encode(endpoint, "UTF-8"));
-
-				createGraphName(URLEncoder.encode(qryName.trim(), "UTF-8")
-						+ "-" + URLEncoder.encode(endpoint.trim(), "UTF-8"));
-
+				
 				isSupport = isSupportSparql1_1(endpoint);
+				
 				if (isSupport) {
 					logger.info("sparql1.1 is supported by '{}' ", endpoint);
 					totalSparql1_1++;
@@ -461,7 +384,6 @@ public class Manipulator implements ParamHandler {
 					totalSparql1_0++;
 				}
 
-				// statusCodeNum=enp.getValue();
 				logger.info("status code {} and http response is {} ",
 						serverStatusCode, httpResponse);
 
@@ -487,9 +409,9 @@ public class Manipulator implements ParamHandler {
 				query = QueryFactory.create(queryToEvaluate);
 				qe = QueryExecutionFactory.sparqlService(endpoint, query);
 
-				logger.info(
+			/*	logger.info(
 						"query #{}. first_result_timeout is {} and execution_timeout is {}",
-						qryNumber, FIRST_RESULT_TIMEOUT, EXECUTION_TIMEOUT);
+						qryNumber, FIRST_RESULT_TIMEOUT, EXECUTION_TIMEOUT);*/
 				qe.setTimeout(FIRST_RESULT_TIMEOUT, EXECUTION_TIMEOUT);
 
 				if (query.isConstructType()) {
@@ -499,6 +421,7 @@ public class Manipulator implements ParamHandler {
 
 					while (triples.hasNext()) {
 						triples.next();
+						//writetoFileTemp(triples.next().toString());
 						sols++;
 						if (sols == 1) {
 
@@ -517,7 +440,9 @@ public class Manipulator implements ParamHandler {
 							queryToEvaluate);
 				}
 
-			} catch (QueryExceptionHTTP httpe) {
+				}
+		
+			catch (QueryExceptionHTTP httpe) {
 				sols = 0;
 				qryAnswer = 0;
 				logger.error(
@@ -676,11 +601,11 @@ public class Manipulator implements ParamHandler {
 
 				}
 
-				new MetadataCreator(new UtilsObjPassing(mdl, endpoint.trim(),
+				new MetadataPlusResultsCreator(new UtilsObjPassing(mdl, endpoint.trim(),
 						graphName.trim(), queryToEvaluate,
 						datasetInQryConstruct, qryName.trim(), qryNumber,
 						executionStartTime, executionEndTime, totalTime, sols,
-						serverStatusCode, httpResponse, writer));
+						serverStatusCode, httpResponse));
 				logger.info("query #{}. total number of solutions {}",
 						qryNumber, sols);
 				logger.info("query #{}. closing time is {} ", qryNumber,
@@ -690,7 +615,8 @@ public class Manipulator implements ParamHandler {
 			}
 			mdl.removeAll();
 
-		}
+			}else{continue;}	
+		} // end of for loop 
 
 		logger.info(
 				"...mathematical measurements for query {} after querying all the targeted endpoints",
@@ -725,6 +651,29 @@ public class Manipulator implements ParamHandler {
 
 	}
 
+	
+	private void writetoFileTemp(String value){
+		try {
+			 
+			//String content = "This is the content to write into file";
+ 
+			File file = new File("/home/helpdesk/Desktop/Test2.txt");
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+ 
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(value);
+			bw.write("\n");
+			bw.close();
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	private void excuteConstruct(QueryExecution qe, String endpoint,
 			int numbOfTriples, String qryName, String queryToEvaluate) {
 
@@ -750,23 +699,15 @@ public class Manipulator implements ParamHandler {
 		}
 	}
 
-	public List<String> pickAliveEndpoints(Set<String> endpoints) {
+	public String pickAliveEndpoints(String endp)  {
 
 		HttpURLConnection http;
-		Map<String, List<String>> header = new HashMap<String, List<String>>();
+		Map<String, List<String>> header ;
+		String aliveEndpoint = "";
 
-		List<String> lstEndpoint = new ArrayList<String>();
-		List<String> aliveEndpoint = new ArrayList<String>();
 		try {
 
-			// add all the set of endpoints which
-			// are not duplicated to this list
-			lstEndpoint.addAll(endpoints);
-
-			Collections.sort(lstEndpoint);// sot the list
-
-			for (String endp : lstEndpoint) {
-
+				header = new HashMap<String, List<String>>();
 				try {
 
 					http = SADUtils.HTTP_Response(endp);
@@ -775,16 +716,15 @@ public class Manipulator implements ParamHandler {
 					header = http.getHeaderFields();
 					int statusCode = http.getResponseCode();
 
-					boolean isAlive = isAlive(endp); // returns the alive
-														// endpoint base on the
-														// sparql "select" query
-
+					boolean isAlive = isAlive(endp); 
+					
 					if (statusCode == 200) {
 
 						total200status++;
 
 						if (isAlive) {
 
+							aliveEndpoint=endp;
 							RespondingToSelect++;
 
 							for (Map.Entry<String, List<String>> entry : header
@@ -793,9 +733,9 @@ public class Manipulator implements ParamHandler {
 								String key = entry.getKey();
 								List<String> value = entry.getValue();
 								for (String val : value) {
-
+									
 									if (key == null) {
-										statusResponse = val;
+										statusResponse =val;
 									} else if (key.equals("Server")) {
 										server = val;
 									} else {
@@ -809,8 +749,6 @@ public class Manipulator implements ParamHandler {
 										+ "] & Server=[" + server + "]";
 
 							}
-
-							aliveEndpoint.add(endp);
 
 						} else {
 							notRespondingToSelect++;
@@ -865,11 +803,8 @@ public class Manipulator implements ParamHandler {
 					logger.error("connection refused for '{}'", endp);
 
 				} catch (ConfigurationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
+					logger.error("{}",e.getStackTrace().toString());;
+				} 
 
 		} catch (NullPointerException nullexp) {
 			logger.error("{}", nullexp.getMessage());
@@ -940,4 +875,95 @@ public class Manipulator implements ParamHandler {
 		return QueryExecutionFactory.sparqlService(endpoint, query);
 
 	}
+	
+
+	/*
+	 * print logging after each query completion over all endpoints
+	 */
+	public void printLastLoggings() {
+
+		logger.info("...total number of endpoints with 200 status code are {}",
+				total200status);
+		logger.info("...total number of endpoints with 400 status code are {}",
+				total400status);
+		logger.info("...total number of endpoints with 404 status code are {}",
+				total404status);
+		logger.info("...total number of endpoints with 500 status code are {}",
+				total500status);
+		logger.info("...total number of endpoints with 502 status code are {}",
+				total502status);
+		logger.info("...total number of endpoints with 503 status code are {}",
+				total503status);
+		logger.info(
+				"...total number of endpoints with Unknow host status are {}",
+				totalUnknownHostStatus);
+		logger.info("...total number of endpoints with Timeout status are {}",
+				totalTimeoutStatus);
+		logger.info(
+				"...total number of endpoints with Connection refused status are {}",
+				totalConnRefuseStatus);
+		logger.info(
+				"...total number of endpoints with not repsonding for some reasons {}",
+				someOtherReasons);
+		logger.info(
+				"...total number of endpoints with no response to select query {}",
+				notRespondingToSelect);
+		logger.info(
+				"...total number of endpoints with response to select query {}",
+				RespondingToSelect);
+		logger.info("...total number of endpoints support sparql1.1 {}",
+				totalSparql1_1);
+		logger.info("...total number of endpoints support sparql1.0 {}",
+				totalSparql1_0);
+
+	}
+
+
+	/**
+	 * log all the all endpoints retrieved from different sources
+	 */
+	public void logAllEndpoints() {
+
+		try {
+			SADUtils.logEndpoints(endpProvider.provider(), ALL_ENDPOINTS);
+		} catch (ParseException e) {
+			logger.error("{}", e.getMessage());
+		} catch (NullPointerException nullexp) {
+			logger.error("{}", nullexp.getMessage());
+
+		}
+	}
+
+	/**
+	 * log all the alive all endpoints retrieved from different sources
+	 */
+	public void logAliveEndpoints() {
+		try {
+			SADUtils.logEndpoints(endpProvider.provider(), LIVE_ENDPOINTS);
+		} catch (ParseException e) {
+			logger.error("{}", e.getMessage());
+		} catch (NullPointerException nullexp) {
+			logger.error("{}", nullexp.getMessage());
+
+		}
+
+	}
+
+	/**
+	 * log all the all alive and responding to (select query) endpoints
+	 * retrieved from different sources
+	 */
+	public void logAliveAndRespondingEndpoints() {
+
+		try {
+			SADUtils.logEndpoints(endpProvider.provider(), config);
+		} catch (ParseException e) {
+			logger.error("{}", e.getMessage());
+		} catch (NullPointerException nullexp) {
+			logger.error("{}", nullexp.getMessage());
+
+		}
+
+	}
+
 }

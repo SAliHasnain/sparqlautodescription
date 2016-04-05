@@ -52,4 +52,6 @@ public class Sad {
     /** <p>RDFS namespace</p> */ 
     public static final Property RDFS = m_model.createProperty("http://www.w3.org/2000/01/rdf-schema#label");
     
+    
+    
 }

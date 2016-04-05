@@ -38,6 +38,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.sparql.util.DateTimeStruct.DateTimeParseException;
 
 /**
  * 
@@ -53,26 +54,31 @@ public class SADUtils {
 	private static String LIVE_ENDPOINTS = "LIVE";
 
 	// write to file
-	static FileWriter writer = null;
+	private static FileWriter writer = null;
 	// read from file
-	static BufferedReader br = null;
+	private static BufferedReader br = null;
 	
 	
-	static QueryExecution qryexec = null;
-	static ResultSet res = null;
-	static Query query = null;
+	private static QueryExecution qryexec = null;
+	private static ResultSet res = null;
+	private static Query query = null;
 
 	
-
 	/*
 	 * get current time of the system in GMT 
 	 */
 	public static String getCurrentTime() throws ParseException {
 
+		DateFormat dateFormat=null;
 		Date date = new Date(System.currentTimeMillis());
-		DateFormat dateFormat = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+	try{	dateFormat = new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		//dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		}catch(DateTimeParseException ex){
+			ex.printStackTrace();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		return dateFormat.format(date);
 	}
 
@@ -87,20 +93,23 @@ public class SADUtils {
 		return getCurrentTime();
 	}
 
+	
 	/*
 	 * calculate the total time interval for queries
 	 */
 	public static long getTotalTime(String startTime, String endTime)
 			throws ParseException {
 
+		
 		SimpleDateFormat formatter = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		Date date1 = formatter.parse(startTime);
 		Date date2 = formatter.parse(endTime);
 
 		return (date2.getTime() - date1.getTime());
 	}
 
+	
 	/*
 	 * create the directory and files to holds the data
 	 * 
@@ -110,10 +119,9 @@ public class SADUtils {
 	 *            name of the file to create
 	 * @return
 	 */
-	public static FileWriter creteDirAndFile(String dirctory, String fileName) {
+	@SuppressWarnings("unused")
+	public static FileWriter createDirAndFile(String dirctory, String fileName) {
 
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Calendar cal = Calendar.getInstance();
 		File directory = null;
 		directory = new File(System.getProperty("user.home") + File.separator
 				+ dirctory);// for creating a directory in user home
@@ -125,7 +133,7 @@ public class SADUtils {
 				;
 			}
 			File file = new File(directory.getPath() + File.separator
-					+ dateFormat.format(cal.getTime()) + "-"
+					//+ dateFormat.format(cal.getTime()) + "-"
 					+ URLEncoder.encode(fileName, "UTF-8"));
 			file.createNewFile();
 			fileName = file.getPath();
@@ -162,7 +170,7 @@ public class SADUtils {
 			Collections.sort(endpointsList);
 
 			if (endpCheck.equals(ALL_ENDPOINTS)) {
-				writer = creteDirAndFile("Endpoints", ALL_ENDPOINTS);
+				writer = createDirAndFile("Endpoints", ALL_ENDPOINTS);
 
 				for (String endp : endpointsList) {
 					writer.write(endp);
@@ -170,7 +178,7 @@ public class SADUtils {
 				}
 			} else if (endpCheck.equals(LIVE_ENDPOINTS)) {
 
-				writer = creteDirAndFile("Endpoints", LIVE_ENDPOINTS);
+				writer = createDirAndFile("Endpoints", LIVE_ENDPOINTS);
 
 				for (String endp : endpointsList) {
 					http = HTTP_Response(endp);
@@ -183,7 +191,7 @@ public class SADUtils {
 				}
 			} else {
 
-				writer = creteDirAndFile("Endpoints", "TEMP");
+				writer = createDirAndFile("Endpoints", "TEMP");
 				for (String endp : endpointsList) {
 					writer.write(endp);
 					writer.write("\n");
@@ -214,7 +222,7 @@ public class SADUtils {
 			endpointsList.addAll(endpoints);
 			Collections.sort(endpointsList);
 
-			writer = creteDirAndFile("Endpoints", "ALIVE_RESPONDING_ENDPOINTS");
+			writer = createDirAndFile("Endpoints", "ALIVE_RESPONDING_ENDPOINTS");
 
 			for (String endp : endpointsList) {
 				http = HTTP_Response(endp);
@@ -491,7 +499,7 @@ public class SADUtils {
 		if (query.contains("COUNT") || query.contains("BIND")) {
 			lang = "SPARQL1.1";
 		} else {
-			lang = "SPARQL1.1/1.0";
+			lang = "SPARQL1.0";
 
 		}
 

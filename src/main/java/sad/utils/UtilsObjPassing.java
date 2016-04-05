@@ -11,7 +11,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 public class UtilsObjPassing {
 
-	private FileWriter writer = null;
 
 	private Model mdl;
 
@@ -38,7 +37,7 @@ public class UtilsObjPassing {
 			String queryToEvaluate, String datasetInQryConstruct,
 			String qryName, String qryNumber, String executionStartTime,
 			String executionEndTime, long totalTime, int sols,
-			String serverStatusCode, String httpResponse, FileWriter writer) {
+			String serverStatusCode, String httpResponse) {
 
 		this.mdl = mdl;
 		this.endpoint = endpoint;
@@ -53,13 +52,10 @@ public class UtilsObjPassing {
 		this.sols = sols;
 		this.serverStatusCode = serverStatusCode;
 		this.httpResponse = httpResponse;
-		this.writer = writer;
+		
 
 	}
 
-	public FileWriter getWriter() {
-		return writer;
-	}
 
 	public Model getMdl() {
 		return mdl;

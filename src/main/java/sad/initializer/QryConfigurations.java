@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package sad.initializer;
 
 import java.io.BufferedReader;
@@ -21,14 +17,15 @@ import org.slf4j.LoggerFactory;
  */
 public class QryConfigurations implements LoadConfigurations {
 
-	static final Logger logger = LoggerFactory
-			.getLogger(QryConfigurations.class);
+	static final Logger logger = LoggerFactory.getLogger(QryConfigurations.class);
 
-	BufferedReader fileReader = null;
-	JSONObject genreJsonObject = null;
+	private BufferedReader fileReader = null;
+	private JSONObject genreJsonObject = null;
 
-	public JSONObject loadConfiguration() throws IOException,
-			ConfigurationException {
+	
+	/* this method loads all the queries from the given file with in project
+	 *  and returns the JSONobject  */
+	public JSONObject loadConfiguration() throws IOException,ConfigurationException {
 
 		try {
 			fileReader = new BufferedReader(new InputStreamReader(this
@@ -45,5 +42,4 @@ public class QryConfigurations implements LoadConfigurations {
 		return genreJsonObject;
 
 	}
-
 }

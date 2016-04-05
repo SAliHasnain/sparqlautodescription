@@ -3,45 +3,12 @@
     "isSupportSparql1.1": "SELECT (COUNT(*) as ?sparql1_1) WHERE { SELECT * WHERE { ?s ?p ?o } LIMIT 1 }",
     "queriesWithDescription": [
   
-        
- 
-        {
-            "qryLabel": "endPointMetaData ",
-            "qryNumber":"2",
-            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <endpointUrl> ?predicateOut ?value . ?subject ?predicateIn <endpointUrl> .} WHERE { { <endpointUrl> ?predicateOut ?value } UNION { ?subject ?predicateIn <endpointUrl> }}"
-        },
-        {
-            "qryLabel": " voidDatasetMetaData",
-            "qryNumber":"3",
-            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT{ ?dataset ?p ?o .} WHERE { ?dataset a void:Dataset . ?dataset void:sparqlEndpoint <endpointUrl> . ?dataset ?p ?o . } "
-        },
-        {
-            "qryLabel": "voidDatasetPartitionMetaData ",
-            "qryNumber":"4",
-            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT{ ?pPart ?pp ?po . ?cPart ?cp ?co . ?cpPart ?cpp ?cpo . } WHERE { ?dataset a void:Dataset . ?dataset void:sparqlEndpoint <endpointUrl> . OPTIONAL { ?dataset void:propertyPartition ?pPart . ?pPart ?pp ?po .} OPTIONAL { ?dataset void:classPartition ?cPart . ?cPart ?cp ?co . OPTIONAL { ?cPart void:propertyPartition ?cpPart . ?cpPart ?cpp ?cpo .}}} "
-        },
-        {
-            "qryLabel": "sdService ",
-            "qryNumber":"5",
-            "qry": " PREFIX sd: <http://www.w3.org/ns/sparql-service-description#> CONSTRUCT { ?service sd:endpoint <endpointUrl> ; ?p ?o . } WHERE { ?service sd:endpoint <endpointUrl> ; ?p ?o . }"
-        },
-        {
-            "qryLabel": "sdServiceGraphCollectionAndNamedGraphs ",
-            "qryNumber":"6",
-            "qry": " PREFIX sd: <http://www.w3.org/ns/sparql-service-description#> CONSTRUCT {  ?service sd:endpoint <endpointUrl> ; ?p ?o . ?service sd:availableGraphs ?gc . ?gc ?gcp ?gco . ?gc sd:namedGraph ?ng . ?ng ?ngp ?ngo .} WHERE { ?service sd:endpoint <endpointUrl> ; ?p ?o . OPTIONAL {  ?service sd:availableGraphs ?gc .?gc ?gcp ?gco . OPTIONAL { ?gc sd:namedGraph ?ng . ?ng ?ngp ?ngo .}}}"
-        },
+    
         {
             "qryLabel": "totalNumberOfTriples ",
             "qryNumber":"7",
             "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT {  <datasetUri> void:triples ?count } WHERE { SELECT (COUNT(*) AS ?count)  WHERE { ?s ?p ?o } } "
         },
-        
-        {
-   			 "qryLabel": " totalNumberOfEntities",
-   			 "qryNumber": "8",
-    		 "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:entities ?count } WHERE { SELECT(COUNT(DISTINCT ?entity) AS?count) WHERE { {?entity ?p ?o.}UNION{  ?s ?p2 ?entity } ?dataset a void:Dataset.?dataset void:sparqlEndpoint <endpointUrl>.?dataset void:uriRegexPattern ?entityRegex.?dataset void:uriSpace ?entityPrefix.FILTER(regex(str(?entity), str(?entityRegex))||strstarts(str(?entity), str(?entityPrefix))) } }"
-		},
-		
         {
             "qryLabel": "totalDistinctClasses ",
             "qryNumber":"9",
@@ -67,33 +34,15 @@
             "qryNumber":"13",
             "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri>  void:classPartition [ void:class ?c ] } WHERE { ?s a ?c } limit 20000"
         },
-       
         {
-            "qryLabel": "listOfClassesInDataset/sparql1.1 ",
-            "qryNumber":"14",
-            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition  ?cUri. ?cUri void:class ?c . } WHERE { ?s a ?c . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?c)))) as ?cUri) }"
-        },
-               {
             "qryLabel": "listOfPropertiesInDataset/sparql1.0 ",
             "qryNumber":"15",
             "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition [ void:property ?p ] } WHERE { ?s ?p ?o } limit 20000"
         },
-        
         {
-            "qryLabel": "listOfPropertiesInDataset/sparql1.1 ",
-            "qryNumber":"16",
-            "qry": " PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:propertyPartition ?pUri . ?pUri void:property ?p . } WHERE { ?s ?p ?o . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?p)))) AS ?pUri)}"
-        },
-         {
             "qryLabel": "listOfPropertiesWithinClassInDataset/sparql1.0 ",
             "qryNumber":"17",
             "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition [  void:class ?c ; void:propertyPartition [ void:property ?p  ] ] } WHERE { ?s a ?c ; ?p ?o .} limit 20000"
-        },
-    
-        {
-            "qryLabel": "listOfPropertiesWithinClassInDataset/sparql1.1 ",
-            "qryNumber":"18",
-            "qry": "PREFIX void: <http://rdfs.org/ns/void#> CONSTRUCT { <datasetUri> void:classPartition ?cpUri. ?cUri  void:class ?c ; void:propertyPartition ?cpUri . ?cpUri void:property ?p  . } WHERE { ?s a ?c ; ?p ?o . BIND(IRI(CONCAT(STR(<baseUri>),MD5(STR(?c)))) AS ?cUri) BIND(IRI(CONCAT(STR(<baseUri>),MD5(CONCAT(STR(?c),STR(?p))))) As ?cpUri)} "
         },
         {
             "qryLabel": "numberOfTriplesPerClassPartition ",
